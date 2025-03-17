@@ -20,7 +20,11 @@
     "type": "git",
     "url": "git://github.com/tkafka/tk-geonames-stream.git"
   },
-  "keywords": ["geonames", "stream", "parser"],
+  "keywords": [
+    "geonames",
+    "stream",
+    "parser"
+  ],
   "bugs": {
     "url": "https://github.com/tkafka/tk-geonames-stream/issues"
   },
@@ -35,7 +39,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "tap-spec": "^5.0.0",
+    "tap-spec": "^2.2.2",
     "tape": "^5.9.0"
   }
 }
