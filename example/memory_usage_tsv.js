@@ -4,31 +4,38 @@
 // Update the path to your geonames TSV file
 const filename = './example/NZ.zip';
 
-const through = require('through2');
-const geonames = require('../index');
-const fs = require('fs');
+import * as geonames from '../index.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const counts = {};
-const countStream = (key, showIds) =>
-  through.obj(function (item, enc, next) {
-    if (!counts.hasOwnProperty(key)) {
-      counts[key] = 0;
-    }
-    ++counts[key];
-    console.log('counts', counts);
-    this.push(item);
-    next();
-  });
+// Get the directory name in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Get the geoname schema as default
-const schema = require('../schema.json').geoname;
+/**
+ * Memory usage example for TSV parsing
+ * Shows how to efficiently process a geonames file
+ */
+console.log('Initial memory usage:', process.memoryUsage().heapUsed / 1024 / 1024, 'MB');
 
-fs.createReadStream(filename, { encoding: 'utf8' })
-  .pipe(countStream('a'))
-  .pipe(geonames.parser(schema))
-  .pipe(countStream('d'))
-  .pipe(
-    through.obj((item, enc, next) => {
-      next();
-    })
-  ); // null
+const dataStream = fs.createReadStream(`${__dirname}/NZ.zip`);
+const pipeline = geonames.createPipeline(dataStream);
+
+let count = 0;
+pipeline.on('data', () => {
+  count++;
+  if (count % 1000 === 0) {
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    console.log(`Records processed: ${count}, Memory usage: ${Math.round(used * 100) / 100} MB`);
+  }
+});
+
+pipeline.on('end', () => {
+  console.log('Total records:', count);
+  console.log('Final memory usage:', process.memoryUsage().heapUsed / 1024 / 1024, 'MB');
+});
+
+pipeline.on('error', (err) => {
+  console.error('Error:', err);
+});

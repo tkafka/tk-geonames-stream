@@ -19,8 +19,8 @@ This package requires Node.js version 18 or newer for `fetch` support.
 You can extract the geonames on-the-fly while you're still downloading the file:
 
 ```javascript
-const geonames = require('tk-geonames-stream');
-const { Readable } = require('stream');
+import * as geonames from 'tk-geonames-stream';
+import { Readable } from 'stream';
 
 async function fetchAndProcess() {
   // Fetch data with streaming support
@@ -41,8 +41,8 @@ fetchAndProcess();
 Or you can go old-school and work with files on disk:
 
 ```javascript
-const geonames = require('tk-geonames-stream');
-const fs = require('fs');
+import * as geonames from 'tk-geonames-stream';
+import fs from 'fs';
 
 // wget http://download.geonames.org/export/dump/NZ.zip
 fs.createReadStream('NZ.zip')
@@ -56,9 +56,9 @@ fs.createReadStream('NZ.zip')
 The easiest way to get started writing your own pipes is to use `through2`; just make sure you call `next()`.
 
 ```javascript
-const geonames = require('tk-geonames-stream');
-const { Readable } = require('stream');
-const through = require('through2');
+import * as geonames from 'tk-geonames-stream';
+import { Readable } from 'stream';
+import through from 'through2';
 
 async function fetchAndProcess() {
   const response = await fetch('http://download.geonames.org/export/dump/NZ.zip');
@@ -115,13 +115,13 @@ The streams output objects which look like this:
 The module provides a streamlined way to create a processing pipeline:
 
 ```javascript
-const geonames = require('tk-geonames-stream');
+import * as geonames from 'tk-geonames-stream';
 
 // Create a pipeline with a source stream
 const pipeline = geonames.createPipeline(sourceStream);
 
 // Or use the individual components
-const { unzip, split, parser, modifiers } = require('tk-geonames-stream');
+import { unzip, split, parser, modifiers } from 'tk-geonames-stream';
 const myPipeline = unzip()
   .pipe(split())
   .pipe(parser())
@@ -131,9 +131,9 @@ const myPipeline = unzip()
 If you need more control, you can re-wire things as you wish; say.. maybe you didn't want the unzip step?
 
 ```javascript
-const geonames = require('tk-geonames-stream');
-const { Readable } = require('stream');
-const split = require('split');
+import * as geonames from 'tk-geonames-stream';
+import { Readable } from 'stream';
+import split from 'split';
 
 async function fetchAndProcess() {
   const response = await fetch('http://example.com/example.tsv');

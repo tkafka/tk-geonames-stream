@@ -1,6 +1,6 @@
-const geonames = require('../');
-const { Readable } = require('stream');
-const through = require('through2');
+import * as geonames from '../index.js';
+import { Readable } from 'stream';
+import through from 'through2';
 
 /**
  * Create a formatter for nicer output

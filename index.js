@@ -1,19 +1,31 @@
-const through = require('through2');
-const stringify = require('./lib/stringify');
-const parser = require('./lib/tsvparser');
-const unzip = require('./lib/unzip');
-const split = require('split');
-const { PassThrough } = require('stream');
+import through from 'through2';
+import { stringify } from './lib/stringify.js';
+import { parser } from './lib/tsvparser.js';
+import { unzip } from './lib/unzip.js';
+import split from 'split';
+import { PassThrough } from 'stream';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { alternativeNames } from './lib/alternative_names.js';
+
+// Get the directory name in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load schema
+const schemaPath = path.join(__dirname, 'schema.json');
+const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
 
 // Create a function that builds a pipeline
 const createPipeline = (source) => {
   // Get the geoname schema as default
-  const schema = require('./schema.json').geoname;
+  const geonameSchema = schema.geoname;
 
   const unzipper = unzip();
   const splitter = split();
-  const tsvParser = parser(schema);
-  const modifier = through.obj(require('./lib/alternative_names'));
+  const tsvParser = parser(geonameSchema);
+  const modifier = through.obj(alternativeNames);
 
   // Pipe the source into the unzipper
   if (source) {
@@ -35,20 +47,8 @@ const pipelineStream = through.obj(function (chunk, enc, next) {
 // Add a pipeline method to the stream for new API usage
 pipelineStream.pipelineMethod = createPipeline;
 
+// Function to create a modifier stream
+const modifiers = () => through.obj(alternativeNames);
+
 // Export the module components and utilities
-module.exports = {
-  // Individual stream components
-  unzip,
-  parser,
-  stringify,
-
-  // Stream for processing alternative names
-  modifiers: () => through.obj(require('./lib/alternative_names')),
-
-  // For backward compatibility we provide a stream object
-  // with a method to create a pipeline
-  pipeline: pipelineStream
-};
-
-// Also provide the function version for modern usage
-module.exports.createPipeline = createPipeline;
+export { unzip, parser, stringify, modifiers, pipelineStream as pipeline, createPipeline };

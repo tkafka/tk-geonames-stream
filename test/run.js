@@ -1,9 +1,7 @@
-const tape = require('tape');
+import tape from 'tape';
+import * as interfaceTests from './interface.js';
+import * as reusableTests from './reusable-streams.js';
 
-const common = {};
-
-const tests = [require('./interface.js'), require('./reusable-streams.js')];
-
-tests.map((t) => {
-  t.all(tape, common);
-});
+// Run the tests
+interfaceTests.all(tape, {});
+reusableTests.all(tape, {});
