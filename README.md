@@ -1,7 +1,7 @@
 ## Installation
 
 ```bash
-$ npm install geonames-stream
+$ npm install tk-geonames-stream
 ```
 
 [![NPM](https://nodei.co/npm/geonames-stream.png?downloads=true&stars=true)](https://nodei.co/npm/geonames-stream)
@@ -15,7 +15,7 @@ This package requires Node.js version 18 or newer for `fetch` support.
 You can extract the geonames on-the-fly while you're still downloading the file:
 
 ```javascript
-const geonames = require('geonames-stream');
+const geonames = require('tk-geonames-stream');
 const { Readable } = require('stream');
 
 async function fetchAndProcess() {

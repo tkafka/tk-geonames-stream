@@ -6,30 +6,28 @@ const split = require('split');
 const { PassThrough } = require('stream');
 
 // Create a function that builds a pipeline
-const createPipeline = function(source) {
+const createPipeline = (source) => {
   // Get the geoname schema as default
   const schema = require('./schema.json').geoname;
-  
+
   const unzipper = unzip();
   const splitter = split();
   const tsvParser = parser(schema);
   const modifier = through.obj(require('./lib/alternative_names'));
-  
+
   // Pipe the source into the unzipper
   if (source) {
     source.pipe(unzipper);
   }
-  
+
   // Create the remainder of the pipeline
-  return unzipper
-    .pipe(splitter)
-    .pipe(tsvParser)
-    .pipe(modifier);
+  return unzipper.pipe(splitter).pipe(tsvParser).pipe(modifier);
 };
 
 // Create a transform stream that can be used as a pipeline
 // This maintains backward compatibility with tests
-const pipelineStream = through.obj(function(chunk, enc, next) {
+/** @type {any} */
+const pipelineStream = through.obj(function (chunk, enc, next) {
   this.push(chunk);
   next();
 });
@@ -43,12 +41,10 @@ module.exports = {
   unzip,
   parser,
   stringify,
-  
+
   // Stream for processing alternative names
-  modifiers: function() {
-    return through.obj(require('./lib/alternative_names'));
-  },
-  
+  modifiers: () => through.obj(require('./lib/alternative_names')),
+
   // For backward compatibility we provide a stream object
   // with a method to create a pipeline
   pipeline: pipelineStream

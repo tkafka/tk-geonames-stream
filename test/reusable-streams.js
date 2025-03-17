@@ -1,4 +1,3 @@
-
 // Test cases in reference to:
 // https://github.com/geopipes/geonames-stream/issues/9
 
@@ -21,9 +20,8 @@ module.exports.reusable = {};
 //   });
 // };
 
-module.exports.reusable.parser = function(test, common) {
-  test('parser', function(t) {
-
+module.exports.reusable.parser = (test, common) => {
+  test('parser', (t) => {
     var s1 = geonames.parser();
     s1.end();
 
@@ -34,9 +32,8 @@ module.exports.reusable.parser = function(test, common) {
   });
 };
 
-module.exports.reusable.modifiers = function(test, common) {
-  test('modifiers', function(t) {
-
+module.exports.reusable.modifiers = (test, common) => {
+  test('modifiers', (t) => {
     var s1 = geonames.modifiers();
     s1.end();
 
@@ -47,13 +44,12 @@ module.exports.reusable.modifiers = function(test, common) {
   });
 };
 
-module.exports.all = function (tape, common) {
-
+module.exports.all = (tape, common) => {
   function test(name, testFunction) {
     return tape('reusable streams: ' + name, testFunction);
   }
 
-  for( var testCase in module.exports.reusable ){
+  for (var testCase in module.exports.reusable) {
     module.exports.reusable[testCase](test, common);
   }
 };

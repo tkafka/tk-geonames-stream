@@ -12,17 +12,16 @@
     "example:fetch": "node example/fetch.js",
     "example:request": "node example/request.js",
     "example:memory-tsv": "node example/memory_usage_tsv.js",
-    "example:memory-zip": "node example/memory_usage_zip.js"
+    "example:memory-zip": "node example/memory_usage_zip.js",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --apply",
+    "format": "biome format . --write"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/tkafka/tk-geonames-stream.git"
   },
-  "keywords": [
-    "geonames",
-    "stream",
-    "parser"
-  ],
+  "keywords": ["geonames", "stream", "parser"],
   "bugs": {
     "url": "https://github.com/tkafka/tk-geonames-stream/issues"
   },

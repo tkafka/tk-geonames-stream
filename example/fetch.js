@@ -5,7 +5,7 @@ const through = require('through2');
 /**
  * Create a formatter for nicer output
  */
-const formatter = through.obj(function(data, enc, next) {
+const formatter = through.obj(function (data, enc, next) {
   // Format the output more concisely
   const output = {
     id: data._id,
@@ -15,7 +15,7 @@ const formatter = through.obj(function(data, enc, next) {
     feature: `${data.feature_class}/${data.feature_code}`,
     timezone: data.timezone
   };
-  
+
   this.push(JSON.stringify(output, null, 2) + '\n\n');
   next();
 });
@@ -27,38 +27,42 @@ const formatter = through.obj(function(data, enc, next) {
 async function fetchAndProcess() {
   try {
     console.error('Fetching geonames data from remote server...');
-    
+
     // Initiate the request - this doesn't download the full file yet
-    const response = await fetch('http://download.geonames.org/export/dump/NZ.zip');
-    
+    const response = await fetch(
+      'http://download.geonames.org/export/dump/NZ.zip'
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch: ${response.status} ${response.statusText}`
+      );
     }
-    
+
     if (!response.body) {
       throw new Error('Response body is null');
     }
-    
+
     // Convert the web stream to a Node.js stream - this maintains streaming behavior
     const bodyStream = Readable.fromWeb(response.body);
-    
+
     console.error('Processing data...');
-    
+
     // Process the data through our pipeline
     const pipeline = geonames.createPipeline(bodyStream);
-    
+
     pipeline
-      .on('error', err => {
+      .on('error', (err) => {
         console.error('Pipeline error:', err);
         process.exit(1);
       })
       .pipe(formatter)
-      .on('error', err => {
+      .on('error', (err) => {
         console.error('Formatter error:', err);
         process.exit(1);
       })
       .pipe(process.stdout)
-      .on('error', err => {
+      .on('error', (err) => {
         // Ignore EPIPE errors (when piped to head, etc.)
         if (err && err.code === 'EPIPE') return;
         console.error('Output error:', err);
@@ -71,4 +75,4 @@ async function fetchAndProcess() {
 }
 
 // Start the fetch and process operation
-fetchAndProcess(); 
+fetchAndProcess();

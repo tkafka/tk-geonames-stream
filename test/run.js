@@ -1,13 +1,9 @@
+const tape = require('tape');
 
-var tape = require('tape');
+const common = {};
 
-var common = {};
+const tests = [require('./interface.js'), require('./reusable-streams.js')];
 
-var tests = [
-  require('./interface.js'),
-  require('./reusable-streams.js')
-];
-
-tests.map(function(t) {
+tests.map((t) => {
   t.all(tape, common);
 });

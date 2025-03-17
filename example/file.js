@@ -8,13 +8,13 @@ const zipFile = path.join(__dirname, 'NZ.zip');
 const inputStream = fs.createReadStream(zipFile);
 
 // Set up error handling
-inputStream.on('error', err => {
+inputStream.on('error', (err) => {
   console.error('Input stream error:', err);
   process.exit(1);
 });
 
 // Create a formatter for nicer output
-const formatter = through.obj(function(data, enc, next) {
+const formatter = through.obj(function (data, enc, next) {
   // Format the output more concisely
   const output = {
     id: data._id,
@@ -24,7 +24,7 @@ const formatter = through.obj(function(data, enc, next) {
     feature: `${data.feature_class}/${data.feature_code}`,
     timezone: data.timezone
   };
-  
+
   this.push(JSON.stringify(output, null, 2) + '\n\n');
   next();
 });
@@ -33,17 +33,17 @@ const formatter = through.obj(function(data, enc, next) {
 const pipeline = geonames.createPipeline(inputStream);
 
 pipeline
-  .on('error', err => {
+  .on('error', (err) => {
     console.error('Pipeline error:', err);
     process.exit(1);
   })
   .pipe(formatter)
-  .on('error', err => {
+  .on('error', (err) => {
     console.error('Formatter error:', err);
     process.exit(1);
   })
   .pipe(process.stdout)
-  .on('error', err => {
+  .on('error', (err) => {
     // Ignore EPIPE errors (when piped to head, etc.)
     if (err && err.code === 'EPIPE') {
       // Gracefully handle the broken pipe
@@ -53,7 +53,7 @@ pipeline
     process.exit(1);
   });
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
   // Also ignore EPIPE errors at the process level
   if (err && err.code === 'EPIPE') {
     // Gracefully handle the broken pipe

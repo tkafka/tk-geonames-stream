@@ -9,15 +9,16 @@ const geonames = require('../index');
 const fs = require('fs');
 
 const counts = {};
-const countStream = function(key, showIds) {
-  return through.obj(function(item, enc, next) {
-    if (!counts.hasOwnProperty(key)) { counts[key] = 0; }
+const countStream = (key, showIds) =>
+  through.obj(function (item, enc, next) {
+    if (!counts.hasOwnProperty(key)) {
+      counts[key] = 0;
+    }
     ++counts[key];
     console.log('counts', counts);
     this.push(item);
     next();
   });
-};
 
 // Get the geoname schema as default
 const schema = require('../schema.json').geoname;
@@ -26,4 +27,8 @@ fs.createReadStream(filename, { encoding: 'utf8' })
   .pipe(countStream('a'))
   .pipe(geonames.parser(schema))
   .pipe(countStream('d'))
-  .pipe(through.obj(function(item, enc, next) { next(); })); // null
+  .pipe(
+    through.obj((item, enc, next) => {
+      next();
+    })
+  ); // null
