@@ -1,10 +1,14 @@
+# tk-geonames-stream
+
+An updated fork of [geonames-stream](https://github.com/geopipes/geonames-stream) with modern Node.js support. The updates were mostly done automatically with Claude 3.7 Sonnet.
+
 ## Installation
 
 ```bash
 $ npm install tk-geonames-stream
 ```
 
-[![NPM](https://nodei.co/npm/geonames-stream.png?downloads=true&stars=true)](https://nodei.co/npm/geonames-stream)
+[![NPM](https://nodei.co/npm/tk-geonames-stream.png?downloads=true&stars=true)](https://nodei.co/npm/tk-geonames-stream)
 
 Note: you will need `node` and `npm` installed first.
 
@@ -27,7 +31,7 @@ async function fetchAndProcess() {
   
   // Process through our pipeline
   geonames.pipeline(bodyStream)
-    .pipe(geonames.stringify)
+    .pipe(geonames.stringify())
     .pipe(process.stdout);
 }
 
@@ -37,14 +41,14 @@ fetchAndProcess();
 Or you can go old-school and work with files on disk:
 
 ```javascript
-const geonames = require('geonames-stream');
+const geonames = require('tk-geonames-stream');
 const fs = require('fs');
 
 // wget http://download.geonames.org/export/dump/NZ.zip
-fs.createReadStream( 'NZ.zip' )
-  .pipe( geonames.pipeline )
-  .pipe( geonames.stringify )
-  .pipe( process.stdout );
+fs.createReadStream('NZ.zip')
+  .pipe(geonames.pipeline())
+  .pipe(geonames.stringify())
+  .pipe(process.stdout);
 ```
 
 ## Roll your own
@@ -52,7 +56,7 @@ fs.createReadStream( 'NZ.zip' )
 The easiest way to get started writing your own pipes is to use `through2`; just make sure you call `next()`.
 
 ```javascript
-const geonames = require('geonames-stream');
+const geonames = require('tk-geonames-stream');
 const { Readable } = require('stream');
 const through = require('through2');
 
@@ -70,10 +74,12 @@ async function fetchAndProcess() {
 fetchAndProcess();
 ```
 
-```bash
+Output will look something like:
+```
 2189529 Invercargill 47287
 2189530 Invercargill 0
 2189531 Inveagh Bay 0
+2189532 Inumia Stream 0
 ```
 
 ## Schema
@@ -106,33 +112,50 @@ The streams output objects which look like this:
 
 ## The generic pipeline
 
-The module comes with a prebuild processing pipeline to make life easier:
+The module provides a streamlined way to create a processing pipeline:
 
 ```javascript
-var pipeline = bun([ unzip(), split(), parser(), modifiers() ]);
+const geonames = require('tk-geonames-stream');
+
+// Create a pipeline with a source stream
+const pipeline = geonames.createPipeline(sourceStream);
+
+// Or use the individual components
+const { unzip, split, parser, modifiers } = require('tk-geonames-stream');
+const myPipeline = unzip()
+  .pipe(split())
+  .pipe(parser())
+  .pipe(modifiers());
 ```
 
 If you need more control, you can re-wire things as you wish; say.. maybe you didn't want the unzip step?
 
 ```javascript
-var geonames = require('geonames-stream'),
-    request = require('request'),
-    split = require('split');
+const geonames = require('tk-geonames-stream');
+const { Readable } = require('stream');
+const split = require('split');
 
-request.get( 'http://example.com/example.tsv' )
-  // .pipe( geonames.unzip() ) I don't want the unzip step
-  .pipe( split() )
-  .pipe( geonames.parser() )
-  .pipe( geonames.modifiers() )
-  .pipe( geonames.stringify )
-  .pipe( process.stdout );
+async function fetchAndProcess() {
+  const response = await fetch('http://example.com/example.tsv');
+  const bodyStream = Readable.fromWeb(response.body);
+  
+  bodyStream
+    // .pipe(geonames.unzip()) // I don't want the unzip step
+    .pipe(split())
+    .pipe(geonames.parser())
+    .pipe(geonames.modifiers())
+    .pipe(geonames.stringify())
+    .pipe(process.stdout);
+}
+
+fetchAndProcess();
 ```
 
 ## NPM Module
 
-The `geonames-stream` npm module can be found here:
+The `tk-geonames-stream` npm module can be found here:
 
-[https://npmjs.org/package/geonames-stream](https://npmjs.org/package/geonames-stream)
+[https://npmjs.org/package/tk-geonames-stream](https://npmjs.org/package/tk-geonames-stream)
 
 ## Contributing
 
@@ -148,6 +171,4 @@ $ npm test
 
 ### Continuous Integration
 
-Travis tests every release against Node.js versions `4` and `6`.
-
-[![Build Status](https://travis-ci.org/geopipes/geonames-stream.png?branch=master)](https://travis-ci.org/geopipes/geonames-stream)
+This project uses modern Node.js versions (18+) for development and testing.
