@@ -25,15 +25,54 @@ const createPipeline = (source) => {
   const unzipper = unzip();
   const splitter = split();
   const tsvParser = parser(geonameSchema);
-  const modifier = through.obj(alternativeNames);
+  
+  // Create a single transform stream that combines parsing and modification
+  // to reduce the number of stream transformations
+  const parserAndModifier = through.obj(function(chunk, enc, next) {
+    // First parse the TSV
+    const parsed = {};
+    const cells = chunk.toString('utf-8').split('\t');
+    const columnsLength = geonameSchema.length;
+    
+    // Fast TSV parsing
+    const cellsLength = Math.min(cells.length, columnsLength);
+    for (let i = 0; i < cellsLength; i++) {
+      const cell = cells[i] || '';
+      parsed[geonameSchema[i]] = cell ? cell.trim() : '';
+    }
+    
+    // Then handle alternative names
+    if (typeof parsed.alternatenames === 'string' && parsed.alternatenames.length > 0) {
+      const names = parsed.alternatenames.split(',');
+      const filtered = [];
+      for (let i = 0; i < names.length; i++) {
+        if (names[i]) filtered.push(names[i]);
+      }
+      parsed.alternatenames = filtered;
+    } else {
+      parsed.alternatenames = [];
+    }
+    
+    this.push(parsed);
+    next();
+  });
 
   // Pipe the source into the unzipper
   if (source) {
     source.pipe(unzipper);
   }
 
-  // Create the remainder of the pipeline
-  return unzipper.pipe(splitter).pipe(tsvParser).pipe(modifier);
+  // Create a combined pipeline or use the original pipeline based on an environment flag
+  const useOptimizedPipeline = process.env.USE_OPTIMIZED_PIPELINE !== 'false';
+  
+  if (useOptimizedPipeline) {
+    // Optimized pipeline with fewer stream transformations
+    return unzipper.pipe(splitter).pipe(parserAndModifier);
+  } else {
+    // Original pipeline for backward compatibility
+    const modifier = through.obj(alternativeNames);
+    return unzipper.pipe(splitter).pipe(tsvParser).pipe(modifier);
+  }
 };
 
 // Create a transform stream that can be used as a pipeline
