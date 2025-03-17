@@ -1,5 +1,24 @@
 const geonames = require('../');
 const { Readable } = require('stream');
+const through = require('through2');
+
+/**
+ * Create a formatter for nicer output
+ */
+const formatter = through.obj(function(data, enc, next) {
+  // Format the output more concisely
+  const output = {
+    id: data._id,
+    name: data.name,
+    location: `${data.latitude},${data.longitude}`,
+    country: data.country_code,
+    feature: `${data.feature_class}/${data.feature_code}`,
+    timezone: data.timezone
+  };
+  
+  this.push(JSON.stringify(output, null, 2) + '\n\n');
+  next();
+});
 
 /**
  * Fetches and processes geonames data from a URL using streaming
@@ -33,9 +52,9 @@ async function fetchAndProcess() {
         console.error('Pipeline error:', err);
         process.exit(1);
       })
-      .pipe(geonames.stringify)
+      .pipe(formatter)
       .on('error', err => {
-        console.error('Stringify error:', err);
+        console.error('Formatter error:', err);
         process.exit(1);
       })
       .pipe(process.stdout)
@@ -52,4 +71,4 @@ async function fetchAndProcess() {
 }
 
 // Start the fetch and process operation
-fetchAndProcess();
+fetchAndProcess(); 

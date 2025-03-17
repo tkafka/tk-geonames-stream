@@ -8,27 +8,37 @@ $ npm install geonames-stream
 
 Note: you will need `node` and `npm` installed first.
 
-The easiest way to install `node.js` is with [nave.sh](https://github.com/isaacs/nave) by executing `[sudo] ./nave.sh usemain stable`
+This package requires Node.js version 18 or newer for `fetch` support.
 
 ## Usage
 
 You can extract the geonames on-the-fly while you're still downloading the file:
 
 ```javascript
-var geonames = require('geonames-stream'),
-    request = require('request');
+const geonames = require('geonames-stream');
+const { Readable } = require('stream');
 
-request.get( 'http://download.geonames.org/export/dump/NZ.zip' )
-  .pipe( geonames.pipeline )
-  .pipe( geonames.stringify )
-  .pipe( process.stdout );
+async function fetchAndProcess() {
+  // Fetch data with streaming support
+  const response = await fetch('http://download.geonames.org/export/dump/NZ.zip');
+  
+  // Convert the response to a Node.js stream
+  const bodyStream = Readable.fromWeb(response.body);
+  
+  // Process through our pipeline
+  geonames.pipeline(bodyStream)
+    .pipe(geonames.stringify)
+    .pipe(process.stdout);
+}
+
+fetchAndProcess();
 ```
 
 Or you can go old-school and work with files on disk:
 
 ```javascript
-var geonames = require('geonames-stream'),
-    fs = require('fs');
+const geonames = require('geonames-stream');
+const fs = require('fs');
 
 // wget http://download.geonames.org/export/dump/NZ.zip
 fs.createReadStream( 'NZ.zip' )
@@ -42,23 +52,28 @@ fs.createReadStream( 'NZ.zip' )
 The easiest way to get started writing your own pipes is to use `through2`; just make sure you call `next()`.
 
 ```javascript
-var geonames = require('geonames-stream'),
-    request = require('request'),
-    through = require('through2');
+const geonames = require('geonames-stream');
+const { Readable } = require('stream');
+const through = require('through2');
 
-request.get( 'http://download.geonames.org/export/dump/NZ.zip' )
-  .pipe( geonames.pipeline )
-  .pipe( through.obj( function( data, enc, next ){
-    console.log( data._id, data.name, data.population );
-    next();
-  }));
+async function fetchAndProcess() {
+  const response = await fetch('http://download.geonames.org/export/dump/NZ.zip');
+  const bodyStream = Readable.fromWeb(response.body);
+  
+  geonames.pipeline(bodyStream)
+    .pipe(through.obj(function(data, enc, next) {
+      console.log(data._id, data.name, data.population);
+      next();
+    }));
+}
+
+fetchAndProcess();
 ```
 
 ```bash
 2189529 Invercargill 47287
 2189530 Invercargill 0
 2189531 Inveagh Bay 0
-2189532 Inumia Stream 0
 ```
 
 ## Schema

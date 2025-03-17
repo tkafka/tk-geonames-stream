@@ -1,17 +1,22 @@
 {
-  "name": "geonames-stream",
+  "name": "tk-geonames-stream",
   "author": "mapzen",
-  "version": "2.2.0",
-  "description": "Streaming geonames parser",
-  "homepage": "https://github.com/geopipes/geonames-stream",
+  "version": "3.0.0",
+  "description": "Streaming geonames parser, continuing from geonames-stream",
+  "homepage": "https://github.com/tkafka/tk-geonames-stream",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "test": "node test/run.js | tap-spec"
+    "test": "node test/run.js | tap-spec",
+    "example": "node example/file.js",
+    "example:fetch": "node example/fetch.js",
+    "example:request": "node example/request.js",
+    "example:memory-tsv": "node example/memory_usage_tsv.js",
+    "example:memory-zip": "node example/memory_usage_zip.js"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/geopipes/geonames-stream.git"
+    "url": "git://github.com/tkafka/tk-geonames-stream.git"
   },
   "keywords": [
     "geonames",
@@ -19,22 +24,20 @@
     "parser"
   ],
   "bugs": {
-    "url": "https://github.com/geopipes/geonames-stream/issues"
+    "url": "https://github.com/tkafka/tk-geonames-stream/issues"
   },
   "engines": {
-    "node": ">=4.0.0",
-    "npm": ">=1.4.3"
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "bun": "0.0.10",
-    "unzipper": "^0.10.11",
-    "readable-stream": "^2.2.2",
-    "split": "^1.0.0",
-    "through2": "^2.0.3"
+    "readable-stream": "^4.7.0",
+    "split": "^1.0.1",
+    "through2": "^4.0.2",
+    "unzipper": "^0.12.3"
   },
   "devDependencies": {
-    "request": "^2.38.0",
-    "tape": "^4.6.3",
-    "tap-spec": "^4.1.1"
+    "@biomejs/biome": "^1.9.4",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.9.0"
   }
 }

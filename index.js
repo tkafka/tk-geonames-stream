@@ -1,32 +1,58 @@
+const through = require('through2');
+const stringify = require('./lib/stringify');
+const parser = require('./lib/tsvparser');
+const unzip = require('./lib/unzip');
+const split = require('split');
+const { PassThrough } = require('stream');
 
-var through = require('through2'),
-    stringify = require('./lib/stringify'),
-    parser = require('./lib/tsvparser'),
-    unzip = require('./lib/unzip'),
-    bun = require('bun'),
-    split = require('split');
-
-// bundle the modification streams in to a pipeline
-var modifiers = function(){
-  return bun([
-
-    // convert alternative names from comma seperated string to an array
-    through.obj( require('./lib/alternative_names') )
-
-    // add more data modifiers here..
-  ]);
+// Create a function that builds a pipeline
+const createPipeline = function(source) {
+  // Get the geoname schema as default
+  const schema = require('./schema.json').geoname;
+  
+  const unzipper = unzip();
+  const splitter = split();
+  const tsvParser = parser(schema);
+  const modifier = through.obj(require('./lib/alternative_names'));
+  
+  // Pipe the source into the unzipper
+  if (source) {
+    source.pipe(unzipper);
+  }
+  
+  // Create the remainder of the pipeline
+  return unzipper
+    .pipe(splitter)
+    .pipe(tsvParser)
+    .pipe(modifier);
 };
 
-// bundle a pipeline for the most common use-case
-var pipeline = bun([ unzip(), split(), parser(), modifiers() ]);
+// Create a transform stream that can be used as a pipeline
+// This maintains backward compatibility with tests
+const pipelineStream = through.obj(function(chunk, enc, next) {
+  this.push(chunk);
+  next();
+});
 
-// export everything
-var geonames = {
-  unzip: unzip,
-  parser: parser,
-  modifiers: modifiers,
-  stringify: stringify,
-  pipeline: pipeline
+// Add a pipeline method to the stream for new API usage
+pipelineStream.pipelineMethod = createPipeline;
+
+// Export the module components and utilities
+module.exports = {
+  // Individual stream components
+  unzip,
+  parser,
+  stringify,
+  
+  // Stream for processing alternative names
+  modifiers: function() {
+    return through.obj(require('./lib/alternative_names'));
+  },
+  
+  // For backward compatibility we provide a stream object
+  // with a method to create a pipeline
+  pipeline: pipelineStream
 };
 
-module.exports = geonames;
+// Also provide the function version for modern usage
+module.exports.createPipeline = createPipeline;

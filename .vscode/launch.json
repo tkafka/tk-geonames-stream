@@ -1,0 +1,67 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch Module",
+			"program": "${workspaceFolder}/index.js",
+			"request": "launch",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"type": "node"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Example: File",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"program": "${workspaceFolder}/example/file.js",
+			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Example: Fetch",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"program": "${workspaceFolder}/example/fetch.js",
+			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Example: Request",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"program": "${workspaceFolder}/example/request.js",
+			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Example: Memory TSV",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"program": "${workspaceFolder}/example/memory_usage_tsv.js",
+			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Example: Memory ZIP",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"program": "${workspaceFolder}/example/memory_usage_zip.js",
+			"console": "integratedTerminal"
+		}
+	]
+}
