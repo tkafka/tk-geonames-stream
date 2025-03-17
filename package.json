@@ -10,7 +10,6 @@
     "test": "node test/run.js | tap-spec",
     "example": "node example/file.js",
     "example:fetch": "node example/fetch.js",
-    "example:request": "node example/request.js",
     "example:memory-tsv": "node example/memory_usage_tsv.js",
     "example:memory-zip": "node example/memory_usage_zip.js",
     "lint": "biome check .",

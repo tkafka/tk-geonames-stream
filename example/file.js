@@ -45,7 +45,7 @@ pipeline
   .pipe(process.stdout)
   .on('error', (err) => {
     // Ignore EPIPE errors (when piped to head, etc.)
-    if (err && err.code === 'EPIPE') {
+    if (err && 'code' in err && err.code === 'EPIPE') {
       // Gracefully handle the broken pipe
       return;
     }
@@ -55,7 +55,7 @@ pipeline
 
 process.on('uncaughtException', (err) => {
   // Also ignore EPIPE errors at the process level
-  if (err && err.code === 'EPIPE') {
+  if (err && 'code' in err && err.code === 'EPIPE') {
     // Gracefully handle the broken pipe
     return;
   }

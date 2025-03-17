@@ -22,10 +22,12 @@ module.exports.reusable = {};
 
 module.exports.reusable.parser = (test, common) => {
   test('parser', (t) => {
-    var s1 = geonames.parser();
+    // Pass the default schema from schema.json
+    var s1 = geonames.parser(require('../schema.json').geoname);
     s1.end();
 
-    var s2 = geonames.parser();
+    // Pass the default schema from schema.json
+    var s2 = geonames.parser(require('../schema.json').geoname);
     s2.end();
 
     t.end();
