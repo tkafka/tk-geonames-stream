@@ -1,6 +1,6 @@
 import tape from 'tape';
 import * as geonames from '../index.js';
-import { Readable } from 'readable-stream';
+import { Readable } from 'node:stream';
 
 export function all(test, common) {
   test('module should be exported', (t) => {
