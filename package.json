@@ -1,7 +1,7 @@
 {
   "name": "tk-geonames-stream",
   "author": "tkafka",
-  "version": "3.0.2",
+  "version": "3.0.5",
   "description": "Streaming geonames parser, continuing from geonames-stream",
   "homepage": "https://github.com/tkafka/tk-geonames-stream",
   "license": "MIT",
@@ -33,8 +33,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "split": "^1.0.1",
-    "through2": "^4.0.2",
     "unzipper": "^0.12.3"
   },
   "devDependencies": {

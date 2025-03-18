@@ -1,23 +1,25 @@
 import * as geonames from '../index.js';
-import { Readable } from 'stream';
-import through from 'through2';
+import { Readable, Transform } from 'node:stream';
 
 /**
  * Create a formatter for nicer output
  */
-const formatter = through.obj(function (data, enc, next) {
-  // Format the output more concisely
-  const output = {
-    id: data._id,
-    name: data.name,
-    location: `${data.latitude},${data.longitude}`,
-    country: data.country_code,
-    feature: `${data.feature_class}/${data.feature_code}`,
-    timezone: data.timezone
-  };
+const formatter = new Transform({
+  objectMode: true,
+  transform(data, enc, callback) {
+    // Format the output more concisely
+    const output = {
+      id: data._id,
+      name: data.name,
+      location: `${data.latitude},${data.longitude}`,
+      country: data.country_code,
+      feature: `${data.feature_class}/${data.feature_code}`,
+      timezone: data.timezone
+    };
 
-  this.push(JSON.stringify(output, null, 2) + '\n\n');
-  next();
+    this.push(JSON.stringify(output, null, 2) + '\n\n');
+    callback();
+  }
 });
 
 /**
@@ -44,6 +46,7 @@ async function fetchAndProcess() {
     }
 
     // Convert the web stream to a Node.js stream - this maintains streaming behavior
+    // @ts-ignore - Ignoring type issues with the web stream conversion
     const bodyStream = Readable.fromWeb(response.body);
 
     console.error('Processing data...');

@@ -1,9 +1,9 @@
-import through from 'through2';
+import { Transform } from 'node:stream';
 import { stringify } from './lib/stringify.js';
 import { parser } from './lib/tsvparser.js';
 import { unzip } from './lib/unzip.js';
-import split from 'split';
-import { PassThrough } from 'stream';
+import createLineSplitter from './lib/line-splitter.js';
+import { PassThrough } from 'node:stream';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -23,38 +23,41 @@ const createPipeline = (source) => {
   const geonameSchema = schema.geoname;
 
   const unzipper = unzip();
-  const splitter = split();
+  const splitter = createLineSplitter();
   const tsvParser = parser(geonameSchema);
   
   // Create a single transform stream that combines parsing and modification
   // to reduce the number of stream transformations
-  const parserAndModifier = through.obj(function(chunk, enc, next) {
-    // First parse the TSV
-    const parsed = {};
-    const cells = chunk.toString('utf-8').split('\t');
-    const columnsLength = geonameSchema.length;
-    
-    // Fast TSV parsing
-    const cellsLength = Math.min(cells.length, columnsLength);
-    for (let i = 0; i < cellsLength; i++) {
-      const cell = cells[i] || '';
-      parsed[geonameSchema[i]] = cell ? cell.trim() : '';
-    }
-    
-    // Then handle alternative names
-    if (typeof parsed.alternatenames === 'string' && parsed.alternatenames.length > 0) {
-      const names = parsed.alternatenames.split(',');
-      const filtered = [];
-      for (let i = 0; i < names.length; i++) {
-        if (names[i]) filtered.push(names[i]);
+  const parserAndModifier = new Transform({
+    objectMode: true,
+    transform(chunk, enc, callback) {
+      // First parse the TSV
+      const parsed = {};
+      const cells = chunk.toString('utf-8').split('\t');
+      const columnsLength = geonameSchema.length;
+      
+      // Fast TSV parsing
+      const cellsLength = Math.min(cells.length, columnsLength);
+      for (let i = 0; i < cellsLength; i++) {
+        const cell = cells[i] || '';
+        parsed[geonameSchema[i]] = cell ? cell.trim() : '';
       }
-      parsed.alternatenames = filtered;
-    } else {
-      parsed.alternatenames = [];
+      
+      // Then handle alternative names
+      if (typeof parsed.alternatenames === 'string' && parsed.alternatenames.length > 0) {
+        const names = parsed.alternatenames.split(',');
+        const filtered = [];
+        for (let i = 0; i < names.length; i++) {
+          if (names[i]) filtered.push(names[i]);
+        }
+        parsed.alternatenames = filtered;
+      } else {
+        parsed.alternatenames = [];
+      }
+      
+      this.push(parsed);
+      callback();
     }
-    
-    this.push(parsed);
-    next();
   });
 
   // Pipe the source into the unzipper
@@ -70,7 +73,12 @@ const createPipeline = (source) => {
     return unzipper.pipe(splitter).pipe(parserAndModifier);
   } else {
     // Original pipeline for backward compatibility
-    const modifier = through.obj(alternativeNames);
+    const modifier = new Transform({
+      objectMode: true,
+      transform(chunk, enc, callback) {
+        alternativeNames.call(this, chunk, enc, callback);
+      }
+    });
     return unzipper.pipe(splitter).pipe(tsvParser).pipe(modifier);
   }
 };
@@ -78,16 +86,24 @@ const createPipeline = (source) => {
 // Create a transform stream that can be used as a pipeline
 // This maintains backward compatibility with tests
 /** @type {any} */
-const pipelineStream = through.obj(function (chunk, enc, next) {
-  this.push(chunk);
-  next();
+const pipelineStream = new Transform({
+  objectMode: true,
+  transform(chunk, enc, callback) {
+    this.push(chunk);
+    callback();
+  }
 });
 
 // Add a pipeline method to the stream for new API usage
 pipelineStream.pipelineMethod = createPipeline;
 
 // Function to create a modifier stream
-const modifiers = () => through.obj(alternativeNames);
+const modifiers = () => new Transform({
+  objectMode: true,
+  transform(chunk, enc, callback) {
+    alternativeNames.call(this, chunk, enc, callback);
+  }
+});
 
 // Export the module components and utilities
 export { unzip, parser, stringify, modifiers, pipelineStream as pipeline, createPipeline };
